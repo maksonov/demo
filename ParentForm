@@ -1,0 +1,19 @@
+        public void OpenChildForm(Form childForm)
+        {
+            Main M = new Main();
+            if (M.actForm != null)
+            {
+                M.actForm.Close();
+            } 
+            Main main = (Main)this.ParentForm;
+            main.actForm = childForm;
+            childForm.TopLevel = false;
+            childForm.FormBorderStyle = FormBorderStyle.None;
+            childForm.Dock = DockStyle.Fill;
+            childForm.BringToFront();
+            main.pnlContent.Controls.Add(childForm);
+            main.pnlContent.Tag = childForm;
+            main.lblTitle.Text = childForm.Text;
+            childForm.Show();
+            this.Close();
+        }
