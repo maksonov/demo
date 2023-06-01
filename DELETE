@@ -1,0 +1,22 @@
+private void button1_Click(object sender, EventArgs e)
+        {
+            connect.Open();
+            string selectQuery = "SELECT COUNT(*) FROM Пользователи WHERE Имя=@name";
+            OleDbCommand command = new OleDbCommand(selectQuery, connect);
+            command.Parameters.AddWithValue("@name", textBox1.Text);
+            int count = (int)command.ExecuteScalar();
+            if (count > 0)
+            {
+                string deleteQuery = "DELETE FROM Пользователи WHERE Имя=@name";
+                command = new OleDbCommand(deleteQuery, connect);
+                command.Parameters.AddWithValue("@name", textBox1.Text);
+                command.ExecuteNonQuery();
+                MessageBox.Show("Пользователь успешно удален.");
+                this.пользователиTableAdapter.Fill(this.testDataSet.Пользователи);
+            }
+            else
+            {
+                MessageBox.Show("Пользователь с таким именем не существует.");
+            }
+            connect.Close();
+        }
