@@ -1,0 +1,32 @@
+private void button2_Click(object sender, EventArgs e)
+        {
+            connect.Open();
+            string selectQuery = "SELECT COUNT(*) FROM Пользователи WHERE Логин=@login";
+            OleDbCommand command = new OleDbCommand(selectQuery, connect);
+            command.Parameters.AddWithValue("@login", textBox7.Text);
+            
+            int count = (int)command.ExecuteScalar();
+            if (count > 0)
+            {
+                MessageBox.Show("Пользователь с таким логином уже существует.");
+            }
+            else
+            {  
+                string insertQuery = "INSERT INTO Пользователи (ID, Роль, Фамилия, Имя, Отчество, Логин, Email, Пароль, [Спец-пароль])" +
+                    " VALUES (@id, @role, @lastName, @firstName, @middleName, @login, @email, @password, @specialPassword)";
+                command = new OleDbCommand(insertQuery, connect);
+                command.Parameters.AddWithValue("@id", textBox2.Text);
+                command.Parameters.AddWithValue("@role", textBox3.Text);
+                command.Parameters.AddWithValue("@lastName", textBox4.Text);
+                command.Parameters.AddWithValue("@firstName", textBox5.Text);
+                command.Parameters.AddWithValue("@middleName", textBox6.Text);
+                command.Parameters.AddWithValue("@login", textBox7.Text);
+                command.Parameters.AddWithValue("@email", textBox8.Text);
+                command.Parameters.AddWithValue("@password", textBox9.Text);
+                command.Parameters.AddWithValue("@specialPassword", textBox10.Text);
+                command.ExecuteNonQuery();
+                MessageBox.Show("Пользователь успешно добавлен.");
+                this.пользователиTableAdapter.Fill(this.testDataSet.Пользователи);
+            }
+            connect.Close();
+        }
