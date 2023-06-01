@@ -1,0 +1,220 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Data;
+using System.Data.OleDb;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace SportTovari
+{
+    public partial class Reg : Form
+    {
+        private string connectionString = ConfigurationManager.ConnectionStrings["MyConnectionString"].ConnectionString;
+        private OleDbConnection connection;
+        
+
+        public Reg()
+        {
+            InitializeComponent();
+            connection = new OleDbConnection(connectionString);
+        }
+
+        private void Registration()
+        {
+            connection.Open();
+            string selectQuery = "SELECT COUNT(*) FROM Пользователи WHERE Логин=@login";
+            OleDbCommand command = new OleDbCommand(selectQuery, connection);
+            command.Parameters.AddWithValue("@login", textLogin.Text);
+            int count = (int)command.ExecuteScalar();
+            if (count > 0)
+            {
+                MessageBox.Show("Пользователь с таким логином уже существует.");
+            }
+            else
+            {
+                string insertQuery = "INSERT INTO Пользователи (Логин, Пароль, Роль) VALUES (@login, @password, @role)";
+                command = new OleDbCommand(insertQuery, connection);
+                command.Parameters.AddWithValue("@login", textLogin.Text);
+                command.Parameters.AddWithValue("@password", textPass.Text);
+                command.Parameters.AddWithValue("@role", "Клиент");
+                command.ExecuteNonQuery();
+                MessageBox.Show("Вы успешно зарегистрировались.");
+                OpenChildForm(new Auth());
+                Main M = new Main(); 
+                M.btnAcc.Text = "Авторизоваться";
+                
+
+            }
+            connection.Close();
+        }
+
+        private void Reg_Load(object sender, EventArgs e)
+        {
+            textLogin.Text = "Введите логин...";
+            textLogin.ForeColor = Color.FromArgb(103, 15, 34);
+            textPass.Text = "Введите пароль...";
+            textPass.ForeColor = Color.FromArgb(103, 15, 34);
+            picEye.Image = Properties.Resources.CloseEye;
+            picLock.Image = Properties.Resources._lock;
+        }
+
+        public void OpenChildForm(Form childForm)
+        {
+            Main M = new Main();
+            if (M.actForm != null)
+            {
+                M.actForm.Close();
+            } 
+            Main main = (Main)this.ParentForm;
+            main.actForm = childForm;
+            childForm.TopLevel = false;
+            childForm.FormBorderStyle = FormBorderStyle.None;
+            childForm.Dock = DockStyle.Fill;
+            childForm.BringToFront();
+            main.pnlContent.Controls.Add(childForm);
+            main.pnlContent.Tag = childForm;
+            main.lblTitle.Text = childForm.Text;
+            childForm.Show();
+            this.Close();
+        }
+
+        private void lblAuth_Click(object sender, EventArgs e)
+        {
+            OpenChildForm(new Auth());
+            Main M = new Main();
+            M.btnAcc.Text = "Авторизоваться";
+        }
+
+        private void picEye_Click(object sender, EventArgs e)
+        {
+            if (textPass.Text != "Введите пароль...")
+            { 
+                if (textPass.UseSystemPasswordChar == true) 
+                {
+                    picEye.Image = Properties.Resources.OpenEye; 
+                    picLock.Image = Properties.Resources.unlock;
+                    textPass.UseSystemPasswordChar = false;
+                }
+                else 
+                {
+                    picEye.Image = Properties.Resources.CloseEye; 
+                    picLock.Image = Properties.Resources._lock;
+                    textPass.UseSystemPasswordChar = true;
+                }
+            }
+        }
+
+        private void lblAuth_MouseEnter(object sender, EventArgs e)
+        {
+            lblAuth.ForeColor = Color.Blue;
+            lblAuth.Cursor = Cursors.Hand;
+        } 
+
+        private void lblAuth_MouseLeave(object sender, EventArgs e)
+        {
+            lblAuth.ForeColor = Color.FromArgb(129, 19, 43);
+        }
+        
+        private void picEye_MouseEnter(object sender, EventArgs e)
+        {
+            picEye.Cursor = Cursors.Hand;
+        }
+
+        private void btnReg_MouseEnter(object sender, EventArgs e)
+        {
+            btnReg.Cursor = Cursors.Hand;
+        }
+
+        
+
+        private void textLogin_Enter(object sender, EventArgs e)
+        {
+            if (textLogin.Text == "Введите логин...")
+            {
+                textLogin.Text = null;
+                textLogin.ForeColor = Color.FromArgb(129, 19, 43);
+            }
+        }
+
+        private void textLogin_Leave(object sender, EventArgs e)
+        {
+            if (textLogin.Text == "")
+            {
+                textLogin.Text = "Введите логин...";
+                textLogin.ForeColor = Color.FromArgb(103, 15, 34);
+            }
+        }
+
+        private void textPass_Enter(object sender, EventArgs e)
+        {
+            if (textPass.Text == "Введите пароль...")
+            {
+                textPass.Text = null;
+                textPass.ForeColor = Color.FromArgb(129, 19, 43);
+                textPass.UseSystemPasswordChar = true;
+            }
+            else if (textPass.Text == "")
+            {
+                textPass.UseSystemPasswordChar = true;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+            else
+            {
+                textPass.UseSystemPasswordChar = true;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+        }
+
+        private void textPass_Leave(object sender, EventArgs e)
+        {
+            if (textPass.Text == "")
+            {
+                textPass.Text = "Введите пароль...";
+                textPass.ForeColor = Color.FromArgb(103, 15, 34);
+                textPass.UseSystemPasswordChar = false;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+            else if (textPass.Text == "Введите пароль...")
+            {
+                textPass.UseSystemPasswordChar = false;
+            }
+            else if (textPass.UseSystemPasswordChar == true)
+            {
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image= Properties.Resources._lock;
+            }
+            else
+            {
+                textPass.UseSystemPasswordChar = true;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+        }
+
+        private void textLogin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (int)Keys.Space)
+                e.KeyChar = '\0';
+        }
+
+        private void textPass_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (int)Keys.Space)
+                e.KeyChar = '\0';
+        }
+
+        private void btnReg_Click(object sender, EventArgs e)
+        {
+            Registration();
+        }
+    }
+}
