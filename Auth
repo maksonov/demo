@@ -1,0 +1,312 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Data;
+using System.Data.OleDb;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Reflection.Emit;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+
+namespace SportTovari
+{
+    public partial class Auth : Form
+    {
+        private string connectionString = ConfigurationManager.ConnectionStrings["MyConnectionString"].ConnectionString;
+        private OleDbConnection connection;
+        
+        public Auth()
+        {
+            InitializeComponent();
+            connection = new OleDbConnection(connectionString);
+        }
+
+        private void Authentication()
+        {
+            connection.Open();
+            string selectQuery = "SELECT * FROM Пользователи WHERE Логин=@login AND Пароль=@password";
+            OleDbCommand command = new OleDbCommand(selectQuery, connection);
+            command.Parameters.AddWithValue("@login", textLogin.Text);
+            command.Parameters.AddWithValue("@password", textPass.Text);
+            OleDbDataReader reader = command.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    string role = reader["Роль"].ToString();
+                    if (role == "Администратор")
+                    {
+                        if (radAdmin.Checked == true)
+                        {
+                            OpenChildForm(new ForA());
+                        }
+                        else
+                        {
+                            MessageBox.Show("Сначала выберете роль.");
+                        }
+                    }
+                    else if (role == "Менеджер")
+                    {
+                        if (radManager.Checked == true)
+                        {
+                            OpenChildForm(new ForM());
+                        }
+                        else
+                        {
+                            MessageBox.Show("Сначала выберете роль.");
+                        }
+                    }
+                    else if (role == "Клиент")
+                    {
+                        if (radClient.Checked == true)
+                        {
+                            OpenChildForm(new ForC());
+                        }
+                        else
+                        {
+                            MessageBox.Show("Сначала выберете роль.");
+                        }
+                    }
+                }
+            }
+            else if (radGuest.Checked == true)
+            {
+                OpenChildForm(new ForG());
+            } 
+            connection.Close();
+        }
+
+
+        private void Auth_Load(object sender, EventArgs e)
+        {
+            textLogin.Text = "Введите логин...";
+            textLogin.ForeColor = Color.FromArgb(103, 15, 34);
+            textPass.Text = "Введите пароль...";
+            textPass.ForeColor = Color.FromArgb(103, 15, 34);
+            picEye.Image = Properties.Resources.CloseEye;
+            picLock.Image = Properties.Resources._lock;
+        }
+
+        public void OpenChildForm(Form childForm)
+        {
+            Main M = new Main();
+            if (M.actForm != null)
+            {
+                M.actForm.Close();
+            }
+            Main main = (Main)this.ParentForm;
+            main.actForm = childForm;
+            childForm.TopLevel = false;
+            childForm.FormBorderStyle = FormBorderStyle.None;
+            childForm.Dock = DockStyle.Fill;
+            childForm.BringToFront();
+            main.pnlContent.Controls.Add(childForm);
+            main.pnlContent.Tag = childForm;
+            main.lblTitle.Text = childForm.Text;
+            childForm.Show();
+            this.Close();
+        }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            Authentication();
+        }
+
+        private void picEye_Click(object sender, EventArgs e)
+        {
+            if (textPass.Text != "Введите пароль...")
+            {
+                if (textPass.UseSystemPasswordChar == true)
+                {
+                    picEye.Image = Properties.Resources.OpenEye;
+                    picLock.Image = Properties.Resources.unlock;
+                    textPass.UseSystemPasswordChar = false;
+                }
+                else
+                {
+                    picEye.Image = Properties.Resources.CloseEye;
+                    picLock.Image = Properties.Resources._lock;
+                    textPass.UseSystemPasswordChar = true;
+                }
+            }
+        }
+     
+        private void textLogin_Enter(object sender, EventArgs e)
+        {
+            if (textLogin.Text == "Введите логин...")
+            {
+                textLogin.Text = null;
+                textLogin.ForeColor = Color.FromArgb(129, 19, 43);
+            }
+        }
+
+        private void textLogin_Leave(object sender, EventArgs e)
+        {
+            if (textLogin.Text == "")
+            {
+                textLogin.Text = "Введите логин...";
+                textLogin.ForeColor = Color.FromArgb(103, 15, 34);
+            }
+        }
+
+        private void textPass_Enter(object sender, EventArgs e)
+        {
+            if (textPass.Text == "Введите пароль...")
+            {
+                textPass.Text = null;
+                textPass.ForeColor = Color.FromArgb(129, 19, 43);
+                textPass.UseSystemPasswordChar = true;
+            }
+            else if (textPass.Text == "")
+            {
+                textPass.UseSystemPasswordChar = true;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+            else
+            {
+                textPass.UseSystemPasswordChar = true;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+        }
+
+        private void textPass_Leave(object sender, EventArgs e)
+        {
+            if (textPass.Text == "")
+            {
+                textPass.Text = "Введите пароль...";
+                textPass.ForeColor = Color.FromArgb(103, 15, 34);
+                textPass.UseSystemPasswordChar = false;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+            else if (textPass.Text == "Введите пароль...")
+            {
+                textPass.UseSystemPasswordChar = false;
+            }
+            else if (textPass.UseSystemPasswordChar == true)
+            {
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+            else
+            {
+                textPass.UseSystemPasswordChar = true;
+                picEye.Image = Properties.Resources.CloseEye;
+                picLock.Image = Properties.Resources._lock;
+            }
+        }
+
+        private void radManager_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radManager.Checked == true) 
+            {
+                picWho.Image = Properties.Resources.manager;
+                picEye.Visible = true;
+                picLock.Visible = true;
+                textPass.Visible = true;
+            }
+        }
+
+        private void radClient_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radClient.Checked == true)
+            {
+                picWho.Image = Properties.Resources.person;
+                picEye.Visible = true;
+                picLock.Visible = true;
+                textPass.Visible = true;
+            }
+        }
+
+        private void radAdmin_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radAdmin.Checked == true)
+            {
+                picWho.Image = Properties.Resources.admin;
+                picEye.Visible = true;
+                picLock.Visible = true;
+                textPass.Visible = true;
+            }
+        }
+
+        private void radGuest_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radGuest.Checked == true)
+            {
+                picWho.Image = Properties.Resources.person;
+                picEye.Visible = false;
+                picLock.Visible = false;
+                textPass.Visible = false;
+            }
+        }
+
+        private void lblReg_Click(object sender, EventArgs e)
+        {
+            OpenChildForm(new Reg());
+            Main M = new Main();
+            M.btnAcc.Text = "Зарегистрироваться";
+        }
+
+        private void lblReg_MouseEnter(object sender, EventArgs e)
+        {
+            lblReg.ForeColor = Color.Blue;
+            lblReg.Cursor = Cursors.Hand;
+        }
+
+        private void lblReg_MouseLeave(object sender, EventArgs e)
+        {
+            lblReg.ForeColor = Color.FromArgb(129, 19, 43);
+        }
+
+        private void picEye_MouseEnter(object sender, EventArgs e)
+        {
+            picEye.Cursor = Cursors.Hand;
+        }
+
+        private void radGuest_MouseEnter(object sender, EventArgs e)
+        {
+            radGuest.Cursor = Cursors.Hand;
+        }
+
+        private void radClient_MouseEnter(object sender, EventArgs e)
+        {
+            radClient.Cursor = Cursors.Hand;
+        }
+
+        private void radManager_MouseEnter(object sender, EventArgs e)
+        {
+            radManager.Cursor = Cursors.Hand;
+        }
+
+        private void radAdmin_MouseEnter(object sender, EventArgs e)
+        {
+            radAdmin.Cursor = Cursors.Hand;
+        }
+
+        private void btnAuth_MouseEnter(object sender, EventArgs e)
+        {
+            btnAuth.Cursor = Cursors.Hand;
+        }
+
+        private void textLogin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (int)Keys.Space)
+                e.KeyChar = '\0';
+        }
+
+        private void textPass_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (int)Keys.Space)
+                e.KeyChar = '\0';
+        }
+    }
+}
