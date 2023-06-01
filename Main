@@ -1,0 +1,210 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Timers;
+using System.Diagnostics;
+using System.Reflection.Emit;
+using System.Data.OleDb;
+using System.Configuration;
+
+
+
+namespace SportTovari
+{
+    public partial class Main : Form
+    {
+
+        public Form actForm;
+        public Button actBtn;
+        public PictureBox actPic;
+        Reg reg = new Reg();
+        Auth auth = new Auth();
+        About about = new About();
+
+        public Main()
+        {
+            InitializeComponent();
+            this.DoubleBuffered = true;
+        }
+        
+        private void Main_Load(object sender, EventArgs e)
+        {
+            this.DoubleBuffered = true;
+            btnCloseChildForm.Visible = false;
+            btnAcc.Visible = true;
+            Timer timer = new Timer();
+            timer1.Interval = 1000; // Устанавливаем интервал таймера на 1 секунду
+            timer.Tick += timer1_Tick; // Добавляем обработчик события Tick
+            timer.Start();
+        }
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            lblTime.Text = DateTime.Now.ToLongTimeString();
+            lblDate.Text = DateTime.Now.ToLongDateString();
+        }
+
+        private void ActivateButton(object btnSender)
+        {
+            if (btnSender != null)
+            {
+                if (btnSender is Button && actBtn != (Button)btnSender)
+                {
+                    DisableButton();
+                    btnCloseChildForm.Visible = true;
+                }
+                else if (btnSender is PictureBox && actPic != (PictureBox)btnSender)
+                {
+                    DisableButton();
+                    btnCloseChildForm.Visible = true;
+                }
+            }
+        }
+
+        private void DisableButton()
+        {
+            foreach (Control previousBtn in pnlMenu.Controls)
+            {
+                if (previousBtn.GetType() == typeof(Button))
+                {
+                   /* previousBtn.BackColor = Color.FromArgb(51, 51, 76);
+                    previousBtn.ForeColor = Color.Gainsboro;
+                    previousBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+                    */
+                }
+            }
+        }
+
+        private void btnCloseChildForm_Click(object sender, EventArgs e)
+        {
+            if (actForm != null)
+            {
+                btnAcc.Visible = true;
+                if (lblTitle.Text == "Авторизация")
+                { 
+                    btnAcc.Text = "Авторизоваться";   
+                }
+                else if (lblTitle.Text == "Регистрация")
+                {  
+                    btnAcc.Text = "Зарегистрироваться";   
+                }
+                actForm.Close();
+                Reset();
+            }
+        }
+
+        private void Reset()
+        {
+            DisableButton();
+            lblTitle.Text = "Главная";
+            actBtn = null;
+            actForm = null;
+            btnCloseChildForm.Visible = false;
+            lblTime.Visible = true;
+            lblDate.Visible = true;
+        }
+
+        public void OpenChildForm(Form childForm, object btnSender)
+        {
+            if (actForm != null)
+            {
+                actForm.Close();
+            }
+            ActivateButton(btnSender);
+            actForm = childForm;
+            childForm.TopLevel = false;
+            childForm.FormBorderStyle = FormBorderStyle.None;
+            childForm.Dock = DockStyle.Fill;
+            childForm.Location = new Point(0, 0);
+            this.pnlContent.Controls.Add(childForm);
+            this.pnlContent.Tag = childForm;
+            childForm.BringToFront();
+            childForm.Show();
+            lblTitle.Text = childForm.Text;
+            lblTime.Visible = false;
+            lblDate.Visible = false;
+            
+        }
+
+        private void btnAcc_Click(object sender, EventArgs e)
+        {
+            if (actForm == null)
+            {
+                if (btnAcc.Text == "Авторизоваться")
+                {
+                    if (actForm != auth)
+                    {
+                        OpenChildForm(new Auth(), sender);  
+                        btnAcc.Visible = false;
+                    }
+                }
+                else if (btnAcc.Text == "Зарегистрироваться")
+                {
+                    if (actForm != reg) 
+                    {
+                        OpenChildForm(new Reg(), sender);
+                        btnAcc.Visible = false;
+                    }
+                }
+            }
+        }
+
+        private void btnAcc_MouseEnter(object sender, EventArgs e)
+        {
+            btnAcc.Cursor = Cursors.Hand;
+        } 
+
+        private void btnCloseChildForm_MouseEnter(object sender, EventArgs e)
+        {
+            btnCloseChildForm.Cursor = Cursors.Hand;
+        }
+
+        private void btnAbout_Click(object sender, EventArgs e)
+        {
+            if (actForm == null)
+            {
+                if (actForm != about)
+                {
+                    OpenChildForm(new About(), sender);
+                }
+            }
+        }
+
+        private void picAbout_Click(object sender, EventArgs e)
+        {
+            btnAbout_Click(sender, e);
+        }
+
+        private void picAbout_MouseEnter(object sender, EventArgs e)
+        {
+            picAbout.Cursor = Cursors.Hand;
+            picAbout.BackColor = Color.FromArgb(223, 191, 191);
+            btnAbout.BackColor = Color.FromArgb(223, 191, 191);
+        }
+
+        private void picAbout_MouseLeave(object sender, EventArgs e)
+        {
+            picAbout.BackColor = Color.FromArgb(248, 213, 213);
+            btnAbout.BackColor = Color.FromArgb(248, 213, 213);
+        }
+
+        private void btnAbout_MouseEnter(object sender, EventArgs e)
+        {
+            btnAbout.Cursor = Cursors.Hand;
+            picAbout.BackColor = Color.FromArgb(223, 191, 191);
+        }
+
+        private void btnAbout_MouseLeave(object sender, EventArgs e)
+        {
+            picAbout.BackColor = Color.FromArgb(248, 213, 213);
+        }
+    }
+}
+
+
