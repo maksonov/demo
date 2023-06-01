@@ -1,0 +1,20 @@
+public void OpenChildForm(Form childForm, object btnSender)
+        {
+            if (actForm != null)
+            {
+                actForm.Close();
+            }
+            ActivateButton(btnSender);
+            actForm = childForm;
+            childForm.TopLevel = false;
+            childForm.FormBorderStyle = FormBorderStyle.None;
+            childForm.Dock = DockStyle.Fill;
+            childForm.Location = new Point(0, 0);
+            this.pnlContent.Controls.Add(childForm);
+            this.pnlContent.Tag = childForm;
+            childForm.BringToFront();
+            childForm.Show();
+            lblTitle.Text = childForm.Text;
+            lblTime.Visible = false;
+            lblDate.Visible = false;  
+        }
