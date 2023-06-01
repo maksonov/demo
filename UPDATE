@@ -1,0 +1,23 @@
+private void button3_Click(object sender, EventArgs e)
+        {
+            connect.Open();
+            string selectQuery = "SELECT COUNT(*) FROM Пользователи WHERE Логин=@login";
+            OleDbCommand command = new OleDbCommand(selectQuery, connect);
+            command.Parameters.AddWithValue("@login", textBox11.Text);
+            int count = (int)command.ExecuteScalar();
+            if (count > 0)
+            {
+                MessageBox.Show("Пользователь с таким логином уже существует");
+            }
+            else
+            {
+                string updateQuery = "UPDATE Пользователи SET Логин=@newLogin WHERE Логин=@login";
+                command = new OleDbCommand(updateQuery, connect);
+                command.Parameters.AddWithValue("@newLogin", textBox12.Text); // Значение нового логина
+                command.Parameters.AddWithValue("@log", textBox11.Text);
+                command.ExecuteNonQuery();
+                MessageBox.Show("Логин пользователя успешно изменен.");
+                this.пользователиTableAdapter.Fill(this.testDataSet.Пользователи);   
+            }
+            connect.Close();
+        }
